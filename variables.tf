@@ -2,10 +2,6 @@ variable name {
   default = "selenoid"
 }
 
-variable description {
-  default = "A lightning fast implementation of Selenium WebDriver protocol running browsers in Docker containers"
-}
-
 variable tags {
   default = {}
 }
@@ -15,6 +11,10 @@ variable instances {
 }
 
 # --- EC2
+
+variable ami {
+  default = ""
+}
 
 variable availability_zone {
   default = null
@@ -156,6 +156,14 @@ variable packages {
   default = []
 }
 
+variable package_update {
+  default = false
+}
+
+variable package_upgrade {
+  default = true
+}
+
 variable runcmd {
   default = []
 }
@@ -164,8 +172,26 @@ variable write_files {
   default = []
 }
 
+# --- Docker
+
+variable install_docker {
+  default = true
+}
+
+variable add_users_in_docker_group {
+  default = []
+}
+
 # --- Application
 
-variable config_manager_version {
-  default = "1.7.1"
+variable cm_selenoid_update_ui {
+  default = true
+}
+
+variable cm_selenoid_update_args {
+  default = ["--vnc"]
+}
+
+variable cm_selenoid_update_ui_args {
+  default = []
 }

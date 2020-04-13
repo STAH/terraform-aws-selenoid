@@ -7,13 +7,12 @@ terraform {
 }
 
 resource aws_instance this {
-  count             = var.instances
-  ami               = data.aws_ami.latest.id
-  tags              = module.tags.tags
-  volume_tags       = module.tags.tags
-  user_data_base64  = base64gzip(module.cloud_config.content)
-  get_password_data = false
-
+  count                                = var.instances
+  ami                                  = module.select_ami.id
+  tags                                 = module.tags.tags
+  volume_tags                          = module.tags.tags
+  user_data_base64                     = base64gzip(module.cloud_config.content)
+  get_password_data                    = false
   availability_zone                    = var.availability_zone
   placement_group                      = var.placement_group
   tenancy                              = var.tenancy
@@ -55,90 +54,58 @@ resource aws_instance this {
     http_tokens                 = var.metadata_http_tokens
     http_put_response_hop_limit = var.metadata_http_put_response_hop_limit
   }
-}
 
-data aws_ami latest {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-*-x86_64-gp2"]
+  lifecycle {
+    ignore_changes = [ami]
   }
-
-  filter {
-    name   = "state"
-    values = ["available"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["amazon"]
 }
 
 module tags {
   source  = "4ops/tags/null"
   version = "1.0.0"
+  name    = var.name
+  tags    = var.tags
+}
 
-  name        = var.name
-  description = var.description
-  tags        = var.tags
+module select_ami {
+  source = "./modules/select-ami"
+  id     = var.ami
+}
+
+module install_docker {
+  source                    = "./modules/install-docker"
+  install_docker            = var.install_docker
+  add_users_in_docker_group = var.add_users_in_docker_group
+}
+
+module install_selenoid {
+  source                     = "./modules/install-selenoid"
+  cm_selenoid_update_ui      = var.cm_selenoid_update_ui
+  cm_selenoid_update_args    = var.cm_selenoid_update_args
+  cm_selenoid_update_ui_args = var.cm_selenoid_update_ui_args
 }
 
 module cloud_config {
   source  = "4ops/cloud-config/null"
   version = "1.0.1"
 
-  default_user = var.default_user
-  users        = var.users
+  default_user    = var.default_user
+  users           = var.users
+  package_update  = var.package_update
+  package_upgrade = var.package_upgrade
+  packages        = var.packages
 
-  package_update  = true
-  package_upgrade = true
+  write_files = concat(
+    module.install_docker.write_files,
+    module.install_selenoid.write_files,
+    var.write_files
+  )
 
-  packages = compact(concat([
-    "curl",
-    "rng-tools",
-  ], var.packages))
+  runcmd = compact(concat(
+    module.install_docker.runcmd,
+    module.install_selenoid.runcmd,
+    var.runcmd
+  ))
 
-  write_files = concat([
-    {
-      path        = "/etc/sysctl.d/99-selenoid.conf",
-      owner       = "root:root",
-      permissions = "0644",
-      content     = file("${path.module}/files/sysctl.conf"),
-    },
-    {
-      path        = "/etc/sudoers.d/wheel",
-      owner       = "root:root",
-      permissions = "0440",
-      content     = "%wheel ALL=(ALL) NOPASSWD:ALL",
-    },
-    {
-      path        = "/etc/ssh/sshd_config",
-      owner       = "root:root",
-      permissions = "0644",
-      content     = file("${path.module}/files/sshd_config"),
-    },
-  ], var.write_files)
-
-  runcmd = compact(concat([
-    "while ! test -r /etc/sysctl.d/99-selenoid.conf; do sleep 3; done",
-    "sysctl -p --system",
-
-    "amazon-linux-extras install docker",
-
-    "systemctl --no-pager --quiet daemon-reload",
-    "systemctl --no-pager --quiet enable docker rngd",
-    "systemctl --no-pager --quiet restart docker rngd sshd",
-
-    "rm -f /etc/update-motd.d/50-amazon-linux-extras-news /etc/update-motd.d/70-available-updates",
-    "systemctl --no-pager --quiet restart update-motd",
-
-    "curl -fsSL https://github.com/aerokube/cm/releases/download/${var.config_manager_version}/cm_linux_amd64 -o /usr/bin/cm",
-    "chmod 0755 /usr/bin/cm",
-    "cm selenoid update --vnc",
-    "cm selenoid-ui update",
-  ], var.runcmd))
+  final_message = "Selenoid installation finished"
 }

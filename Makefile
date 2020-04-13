@@ -1,6 +1,6 @@
 .ONESHELL:
 .SHELL := /usr/bin/bash
-.PHONY: apply-test-plan backup clean commit ctrl-z fmt test-plan validate
+.PHONY: apply-test-plan clean destroy fmt graph inputs test-plan update-readme validate
 
 export TF_IN_AUTOMATION=1
 export TF_INPUT=0
@@ -9,38 +9,53 @@ fmt:
 	@terraform fmt -recursive
 
 validate: fmt
+	@test -f secrets.env && . ./secrets.env || true
 	@cd test
 	@terraform init -backend=false -lock=false
 	@terraform validate
 
 test-plan: validate
+	@test -f secrets.env && . ./secrets.env || true
 	@cd test
 	@terraform init
 	@terraform plan -out=plan.tfplan
 
 apply-test-plan:
+	@test -f secrets.env && . ./secrets.env || true
 	@cd test
 	@terraform apply -refresh=false plan.tfplan
 	@rm -f plan.tfplan
 
-backup:
-	@unset TS
-	@export TS="$$(date +%s).backup"
-	@mkdir "$$TS" || exit 1
-	@cp main.tf variables.tf outputs.tf "$$TS"
-	@git status --short 2> /dev/null
+destroy:
+	@test -f secrets.env && . ./secrets.env || true
+	@cd test
+	@terraform plan -destroy -out=plan.tfplan
+	@terraform apply -refresh=false plan.tfplan
+	@rm -f plan.tfplan
 
-ctrl-z:
-	@unset TS
-	@export TS=$$(find . -type d -name '*.backup' | sort | tail -1)
-	@test -d "$$TS" && test -f "$$TS/main.tf" && test -f "$$TS/variables.tf" && test -f "$$TS/outputs.tf" || exit 1
-	@cp -f "$$TS/main.tf" main.tf
-	@cp -f "$$TS/variables.tf" variables.tf
-	@cp -f "$$TS/outputs.tf" outputs.tf
-	@rm -rf "$$TS"
-	@git status --short 2> /dev/null
+providers:
+	@cd test
+	@terraform providers
 
-clean:
+graph:
+	@cd test
+	@terraform graph
+
+inputs:
+	@terraform-docs pretty . \
+		--no-providers \
+		--no-outputs \
+		--sort-by-required
+
+update-readme:
+	@test -f README.backup.md \
+		&& echo Delete backup before updating README.md \
+		&& exit 42 \
+		|| cp README.md README.backup.md
+	@sed -n '/## Providers/q;p' README.backup.md > README.md
+	@terraform-docs md . >> README.md
+
+clean: fmt
 	@find . -depth -type d -a '(' \
 		-name '.terraform' \
 		-o \
@@ -56,10 +71,6 @@ clean:
 		-name '*.tfplan' \
 		-o \
 		-name '*.backup' \
+		-o \
+		-name '*.backup.md' \
 	')' -exec rm -rf '{}' +
-
-commit: validate clean
-	@export COMMIT_MESSAGE="$(message)"
-	@test -n "$$COMMIT_MESSAGE" || exit 1
-	@git add .
-	@git commit -m "$$COMMIT_MESSAGE"
