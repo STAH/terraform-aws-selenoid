@@ -89,12 +89,12 @@ module "cloud_config" {
   source  = "4ops/cloud-config/null"
   version = "1.0.2"
 
-  default_user    = var.default_user
-  users           = var.users
-  package_update  = var.package_update
-  package_upgrade = var.package_upgrade
+  default_user               = var.default_user
+  users                      = var.users
+  package_update             = var.package_update
+  package_upgrade            = var.package_upgrade
   package_reboot_if_required = true
-  packages        = var.packages
+  packages                   = var.packages
 
   write_files = concat(
     module.install_docker.write_files,
