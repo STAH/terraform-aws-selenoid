@@ -215,42 +215,42 @@ variable "disable_api_termination" {
 # --- Cloud config
 
 variable "default_user" {
-  description = "?? default_user"
+  description = "Default user"
   type        = any
 }
 
 variable "users" {
-  description = "?? users"
-  type        = list
+  description = "Users to add"
+  type        = list(any)
   default     = []
 }
 
 variable "packages" {
-  description = "?? packages"
+  description = "Packages to install"
   type        = list(string)
   default     = []
 }
 
 variable "package_update" {
-  description = "?? package_update"
+  description = "Should update packages"
   type        = bool
   default     = false
 }
 
 variable "package_upgrade" {
-  description = "?? package_upgrade"
+  description = "Should upgrade packages"
   type        = bool
   default     = true
 }
 
 variable "runcmd" {
-  description = "?? runcmd"
+  description = "List of additional commands to run"
   type        = list(string)
   default     = []
 }
 
 variable "write_files" {
-  description = "?? write_files"
+  description = "List of additional files to copy"
   type        = list(string)
   default     = []
 }
@@ -258,13 +258,13 @@ variable "write_files" {
 # --- Docker
 
 variable "install_docker" {
-  description = "?? install_docker"
+  description = "Should install Docker engine?"
   type        = bool
   default     = true
 }
 
 variable "add_users_in_docker_group" {
-  description = "?? add_users_in_docker_group"
+  description = "Users to add to the Docker group"
   type        = list(string)
   default     = []
 }
