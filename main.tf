@@ -6,7 +6,7 @@ terraform {
   }
 }
 
-resource aws_instance this {
+resource "aws_instance" "this" {
   count                                = var.instances
   ami                                  = module.select_ami.id
   tags                                 = module.tags.tags
@@ -60,39 +60,40 @@ resource aws_instance this {
   }
 }
 
-module tags {
+module "tags" {
   source  = "4ops/tags/null"
   version = "1.0.0"
   name    = var.name
   tags    = var.tags
 }
 
-module select_ami {
+module "select_ami" {
   source = "./modules/select-ami"
   id     = var.ami
 }
 
-module install_docker {
+module "install_docker" {
   source                    = "./modules/install-docker"
   install_docker            = var.install_docker
   add_users_in_docker_group = var.add_users_in_docker_group
 }
 
-module install_selenoid {
+module "install_selenoid" {
   source                     = "./modules/install-selenoid"
   cm_selenoid_update_ui      = var.cm_selenoid_update_ui
   cm_selenoid_update_args    = var.cm_selenoid_update_args
   cm_selenoid_update_ui_args = var.cm_selenoid_update_ui_args
 }
 
-module cloud_config {
+module "cloud_config" {
   source  = "4ops/cloud-config/null"
-  version = "1.0.1"
+  version = "1.0.2"
 
   default_user    = var.default_user
   users           = var.users
   package_update  = var.package_update
   package_upgrade = var.package_upgrade
+  package_reboot_if_required = true
   packages        = var.packages
 
   write_files = concat(
