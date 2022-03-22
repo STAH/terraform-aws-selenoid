@@ -1,7 +1,7 @@
-output write_files {
+output "write_files" {
   value = local.write_files
 }
 
-output runcmd {
+output "runcmd" {
   value = local.runcmd
 }
