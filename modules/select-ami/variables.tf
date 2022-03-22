@@ -1,5 +1,5 @@
 variable "id" {
   description = "?? id"
-  type = string
-  default = ""
+  type        = string
+  default     = ""
 }
