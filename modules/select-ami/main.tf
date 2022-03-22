@@ -1,4 +1,4 @@
-data aws_ami latest {
+data "aws_ami" "latest" {
   most_recent = true
 
   filter {
