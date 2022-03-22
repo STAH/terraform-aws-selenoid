@@ -3,7 +3,7 @@ data aws_ami latest {
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-*-x86_64-gp2"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
   }
 
   filter {
@@ -16,5 +16,5 @@ data aws_ami latest {
     values = ["hvm"]
   }
 
-  owners = ["amazon"]
+  owners = ["099720109477"] // Canonical
 }
