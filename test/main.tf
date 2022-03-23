@@ -19,6 +19,7 @@ module "test" {
   packages                  = ["git", "jq"]
   subnet_id                 = var.subnet_id
   vpc_security_group_ids    = var.vpc_security_group_ids
+  ami                       = var.ami
   add_users_in_docker_group = []
   tags                      = module.tags.tags
 }
