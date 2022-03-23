@@ -8,7 +8,7 @@ terraform {
 
 resource "aws_instance" "this" {
   count                                = var.instances
-  ami                                  = module.select_ami.id
+  ami                                  = var.ami # module.select_ami.id
   tags                                 = module.tags.tags
   volume_tags                          = module.tags.tags
   user_data_base64                     = base64gzip(module.cloud_config.content)
