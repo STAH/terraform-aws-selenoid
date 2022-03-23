@@ -8,6 +8,10 @@ variable "vpc_security_group_ids" {
   default = ["sg-03de2a80ba237ba56"]
 }
 
+variable "ami" {
+  default = "ami-015afd151917a362d" # Ubuntu 20.04
+}
+
 variable "name" {
   default = "testing-selenoid"
 }
