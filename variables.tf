@@ -129,9 +129,9 @@ variable "volume_type" {
 }
 
 variable "volume_size" {
-  description = "?? Volume size"
+  description = "Size of the volume in gibibytes (GiB)."
   type        = number
-  default     = 8
+  default     = 20
 }
 
 variable "volume_iops" {
