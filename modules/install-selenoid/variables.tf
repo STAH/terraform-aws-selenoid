@@ -3,7 +3,7 @@ variable "cm_selenoid_update_ui" {
 }
 
 variable "cm_selenoid_update_args" {
-  default = ["--vnc"]
+  default = []
 }
 
 variable "cm_selenoid_update_ui_args" {
