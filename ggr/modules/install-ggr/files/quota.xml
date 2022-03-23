@@ -1,0 +1,9 @@
+<qa:browsers xmlns:qa="urn:config.gridrouter.qatools.ru">
+<browser name="chrome" defaultVersion="99.0">
+    <version number="99.0">
+        <region name="1">
+            <host name="ec2-54-195-83-238.eu-west-1.compute.amazonaws.com" port="4444" count="5"/>
+        </region>
+    </version>
+</browser>
+</qa:browsers>
